@@ -13,8 +13,9 @@ CC        = gcc
 CFLAGS    = -Wall -Wextra -g
 BUILD_DIR = build
 # Add future .c files here
-SRC    = src/main.c
-TARGET = $(BUILD_DIR)/hash
+SRC     = src/main.c src/ui.c
+HEADERS = src/ui.h
+TARGET  = $(BUILD_DIR)/hash
 
 # ---------- IUP ----------
 IUP_VERSION = 4.0.0
@@ -41,7 +42,7 @@ LIBS    = $(shell $(PKG) --static --libs iup)
 build: $(TARGET)
 
 # "| check-build": checks first, without forcing a rebuild
-$(TARGET): $(SRC) | check-build
+$(TARGET): $(SRC) $(HEADERS) | check-build
 	@echo "Building $(TARGET)..."
 	@mkdir -p $(BUILD_DIR)
 	@$(CC) $(CFLAGS) -o $(TARGET) $(SRC) $(LIBS)
