@@ -1,0 +1,9 @@
+# Editor settings
+.idea/
+.vscode/
+
+# Build outputs and dependencies
+*.o
+hash
+*.dSYM/
+deps/
