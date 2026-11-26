@@ -14,7 +14,7 @@ CFLAGS    = -Wall -Wextra -g
 BUILD_DIR = build
 # Add future .c files here
 SRC     = src/main.c src/ui.c
-HEADERS = src/ui.h
+HEADERS = src/colors.h src/theme.h src/ui.h
 TARGET  = $(BUILD_DIR)/hash
 
 # ---------- IUP ----------
