@@ -9,11 +9,13 @@
 # Warning: the project path must not contain spaces.
 
 # ---------- Application ----------
-CC     = gcc
-CFLAGS = -Wall -Wextra -g
+CC        = gcc
+CFLAGS    = -Wall -Wextra -g
+BUILD_DIR = build
 # Add future .c files here
-SRC    = main.c
-TARGET = hash
+SRC     = src/main.c src/ui.c
+HEADERS = src/ui.h
+TARGET  = $(BUILD_DIR)/hash
 
 # ---------- IUP ----------
 IUP_VERSION = 4.0.0
@@ -40,8 +42,9 @@ LIBS    = $(shell $(PKG) --static --libs iup)
 build: $(TARGET)
 
 # "| check-build": checks first, without forcing a rebuild
-$(TARGET): $(SRC) | check-build
+$(TARGET): $(SRC) $(HEADERS) | check-build
 	@echo "Building $(TARGET)..."
+	@mkdir -p $(BUILD_DIR)
 	@$(CC) $(CFLAGS) -o $(TARGET) $(SRC) $(LIBS)
 	@echo "Build done."
 
@@ -67,7 +70,7 @@ run:
 	@./$(TARGET)
 
 clean:
-	@rm -rf $(TARGET) *.o *.dSYM
+	@rm -rf $(BUILD_DIR)
 	@echo "Application cleaned."
 
 purge: clean

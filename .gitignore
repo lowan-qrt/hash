@@ -3,7 +3,5 @@
 .vscode/
 
 # Build outputs and dependencies
-*.o
-hash
-*.dSYM/
+build/
 deps/
