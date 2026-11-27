@@ -1,10 +1,11 @@
 # Hash: Markdown editor (macOS and Linux)
 #
-#   make deps   : installs IUP into deps/ (only once)
-#   make build  : compiles the application ("make" alone does the same)
-#   make run    : runs the application, without recompiling
-#   make clean  : removes the compiled application (keeps deps/)
-#   make purge  : make clean + removes the dependencies
+#   make deps    : installs IUP into deps/ (only once)
+#   make build   : compiles the application ("make" alone does the same)
+#   make release : make deps + make build + removes the dependencies
+#   make run     : runs the application, without recompiling
+#   make clean   : removes the compiled application (keeps deps/)
+#   make purge   : make clean + removes the dependencies
 #
 # Warning: the project path must not contain spaces.
 
@@ -37,7 +38,7 @@ CFLAGS += $(shell $(PKG) --cflags iup)
 LIBS    = $(shell $(PKG) --static --libs iup)
 
 # ---------- Commands ----------
-.PHONY: build deps run clean purge check-deps check-build
+.PHONY: build deps release run clean purge check-deps check-build
 
 build: $(TARGET)
 
@@ -64,6 +65,10 @@ deps: check-deps
 	   { echo "ERROR: install failed, see $(DEPS_LOG)"; exit 1; }
 	@rm -rf $(IUP_SRC) $(IUP_ARCHIVE)
 	@echo "IUP is installed. Then: make build"
+
+release: deps build
+	@rm -rf $(DEPS)
+	@echo "Dependencies removed."
 
 run:
 	@test -x $(TARGET) || { echo "ERROR: Program missing, run: make build"; exit 1; }

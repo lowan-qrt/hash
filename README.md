@@ -40,10 +40,18 @@ make build
 make run
 ```
 
+To only build the application without keeping the dependencies:
+
+```
+make release
+make run
+```
+
 | Command | What it does |
 |---|---|
 | `make deps` | downloads IUP 4.0.0, verifies the archive, builds it and installs it into `deps/` |
 | `make build` (or `make`) | compiles the application |
+| `make release` | `deps` + `build`, then removes `deps/`: for using the app, not for developing it |
 | `make run` | runs the application, **without recompiling** |
 | `make build run` | compiles, then runs |
 | `make clean` | removes the compiled application |
