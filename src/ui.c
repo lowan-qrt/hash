@@ -7,19 +7,16 @@
 #include "ui.h"
 
 static Ihandle *editor;
-static char current_path[4096];
+static char current_path[4096];      // current opened file
+static int is_modified = 0;          // 1 if there are unsaved changes
+static int confirm_discard(void);    // defined further down
 
 // Menu callbacks: IUP calls them when the item is clicked
-static int on_quit(Ihandle *item)
-{
-    (void)item;          // unused parameter
-    return IUP_CLOSE;
-}
-
 /** Shows the file dialog and loads the chosen Markdown file into the editor. */
 static int on_open(Ihandle *item)
 {
     (void)item;          // unused parameter
+    if (!confirm_discard()) return IUP_DEFAULT;
 
     Ihandle *file_dialog = IupFileDlg();
     IupSetAttribute(file_dialog, "DIALOGTYPE", "OPEN");
@@ -36,6 +33,7 @@ static int on_open(Ihandle *item)
         else
         {
             snprintf(current_path, sizeof(current_path), "%s", path);
+            is_modified = 0;
             IupSetStrAttribute(editor, "VALUE", content);
             free(content);
         }
@@ -65,7 +63,11 @@ static int on_save_as(Ihandle *item)
         if (file_write(path, content) == -1)
         {
             IupMessage("Error", "Could not save the file");
-        } else snprintf(current_path, sizeof(current_path), "%s", path);
+        } else
+        {
+            snprintf(current_path, sizeof(current_path), "%s", path);
+            is_modified = 0;
+        }
     }
 
     IupDestroy(file_dialog);
@@ -87,8 +89,50 @@ static int on_save(Ihandle *item)
     if (file_write(current_path, content) == -1)
     {
         IupMessage("Error", "Could not save the file");
+    } else is_modified = 0;
+
+    return IUP_DEFAULT;
+}
+
+/** Called each time the user edits the text: marks the content as modified. */
+static int on_text_changed(Ihandle *item)
+{
+    (void)item;
+    is_modified = 1;
+    return IUP_DEFAULT;
+}
+
+/** Returns 1 if it is safe to drop the editor content, 0 to cancel. */
+static int confirm_discard(void)
+{
+    if (!is_modified) return 1;
+
+    const int choice = IupAlarm("Unsaved changes", "Save your changes?",
+                                "Save", "Don't save", "Cancel");
+
+    if (choice == 1)
+    {
+        on_save(NULL);
+        return !is_modified;   // still 1 if saving failed or was cancelled
     }
 
+    return choice == 2;
+}
+
+/** Window close button and Cmd+Q: keeps the window open if the user cancels. */
+static int on_close(Ihandle *window)
+{
+    (void)window;
+
+    if (confirm_discard()) return IUP_DEFAULT;
+    else return IUP_IGNORE;
+}
+
+/** Closes the application, unless the user cancels. */
+static int on_quit(Ihandle *item)
+{
+    (void)item;          // unused parameter
+    if (confirm_discard()) return IUP_CLOSE;
     return IUP_DEFAULT;
 }
 
@@ -100,11 +144,13 @@ Ihandle *ui_create_main_window(void)
     IupSetAttribute(editor, "EXPAND", "YES");
     IupSetAttribute(editor, "BGCOLOR", THEME_BG);
     IupSetAttribute(editor, "FGCOLOR", THEME_FG);
+    IupSetCallback(editor, "VALUECHANGED_CB", on_text_changed);
 
     // A dialog holds a single child
     Ihandle *window = IupDialog(editor);
     IupSetAttribute(window, "TITLE", "Hash");
     IupSetAttribute(window, "SIZE", "HALFxHALF");
+    IupSetCallback(window, "CLOSE_CB", on_close);
 
     // File menu: built from the inside out (items, list, submenu, bar)
     Ihandle *separator = IupMenuSeparator();
