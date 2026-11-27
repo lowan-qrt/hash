@@ -5,6 +5,16 @@
 A minimal Markdown editor written in C with [IUP](https://github.com/gen2brain/iup-go),
 for macOS and Linux.
 
+## Features
+
+- Open, edit and save Markdown files (`.md`)
+- `File` menu: `Open`, `Save`, `Save as...`, `Quit`
+- Asks before discarding unsaved changes
+- Dark grey theme, with colors defined in `src/theme.h`
+- Native menus, windows and file dialogs
+
+The rendered Markdown view and the formatting buttons are not available yet.
+
 ## Requirements
 
 | Tool | Purpose |
