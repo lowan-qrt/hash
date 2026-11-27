@@ -44,6 +44,32 @@ static int on_open(Ihandle *item)
     return IUP_DEFAULT;
 }
 
+/** Asks for a path and saves the editor content into it. */
+static int on_save_as(Ihandle *item)
+{
+    (void)item;           // unused parameter
+
+    Ihandle *file_dialog = IupFileDlg();
+    IupSetAttribute(file_dialog, "DIALOGTYPE", "SAVE");
+    IupSetAttribute(file_dialog, "EXTFILTER", "Markdown|*.md|");
+    IupPopup(file_dialog, IUP_CENTER, IUP_CENTER);
+
+    if (IupGetInt(file_dialog, "STATUS") != -1)
+    {
+        char *path = IupGetAttribute(file_dialog, "VALUE");
+        char *content = IupGetAttribute(editor, "VALUE");
+
+        if (file_write(path, content) == -1)
+        {
+            IupMessage("Error", "Could not save the file");
+        }
+    }
+
+    IupDestroy(file_dialog);
+
+    return IUP_DEFAULT;
+}
+
 Ihandle *ui_create_main_window(void)
 {
     editor = IupText();
@@ -59,14 +85,16 @@ Ihandle *ui_create_main_window(void)
     IupSetAttribute(window, "SIZE", "HALFxHALF");
 
     // File menu: built from the inside out (items, list, submenu, bar)
-    Ihandle *item_open = IupMenuItem("Open");
     Ihandle *separator = IupMenuSeparator();
+    Ihandle *item_open = IupMenuItem("Open");
+    Ihandle *item_save_as = IupMenuItem("Save as...");
     Ihandle *item_quit = IupMenuItem("Quit");
-    Ihandle *file_list = IupMenu(item_open, separator, item_quit, NULL);
+    Ihandle *file_list = IupMenu(item_open, item_save_as, separator, item_quit, NULL);
     Ihandle *file_menu = IupSubmenu("File", file_list);
     Ihandle *menu_bar  = IupMenu(file_menu, NULL);
     IupSetAttributeHandle(window, "MENU", menu_bar);
     IupSetCallback(item_open, "ACTION", on_open);
+    IupSetCallback(item_save_as, "ACTION", on_save_as);
     IupSetCallback(item_quit, "ACTION", on_quit);
 
     return window;

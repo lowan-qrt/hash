@@ -1,6 +1,7 @@
 // Reads text files, independently of the user interface.
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "file.h"
 
@@ -34,4 +35,20 @@ char *file_read(const char *path)
     fclose(file);
 
     return content;
+}
+
+int file_write(const char *path, const char *content)
+{
+    FILE *file = fopen(path, "wb");
+    if (file == NULL) return -1;
+
+    const size_t length = strlen(content);
+
+    const size_t written_count = fwrite(content, 1, length, file);
+
+    const int close_result = fclose(file);
+
+    if (written_count != length || close_result != 0) return -1;
+
+    return 0;
 }
