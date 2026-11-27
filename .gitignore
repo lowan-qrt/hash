@@ -1,0 +1,10 @@
+# Editor settings
+.idea/
+.vscode/
+
+# Build outputs and dependencies
+build/
+deps/
+
+# macOS
+.DS_Store
