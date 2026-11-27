@@ -11,4 +11,13 @@
  */
 char *file_read(const char *path);
 
+/**
+ * Writes a string into a text file, replacing its previous content.
+ *
+ * @param path path of the file to write
+ * @param content null-terminated string to write
+ * @return 0 on success, -1 on error
+ */
+int file_write(const char *path, const char *content);
+
 #endif
