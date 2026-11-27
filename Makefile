@@ -13,8 +13,8 @@ CC        = gcc
 CFLAGS    = -Wall -Wextra -g
 BUILD_DIR = build
 # Add future .c files here
-SRC     = src/main.c src/ui.c
-HEADERS = src/colors.h src/theme.h src/ui.h
+SRC     = src/main.c src/file.c src/ui.c
+HEADERS = src/colors.h src/file.h src/theme.h src/ui.h
 TARGET  = $(BUILD_DIR)/hash
 
 # ---------- IUP ----------

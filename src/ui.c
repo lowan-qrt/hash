@@ -1,8 +1,11 @@
 // Builds the main window and its widgets.
-#include <stddef.h>
+#include <stdlib.h>
 
+#include "file.h"
 #include "theme.h"
 #include "ui.h"
+
+static Ihandle *editor;
 
 // Menu callbacks: IUP calls them when the item is clicked
 static int on_quit(Ihandle *item)
@@ -11,7 +14,7 @@ static int on_quit(Ihandle *item)
     return IUP_CLOSE;
 }
 
-/** Shows the file dialog and displays the path of the chosen Markdown file. */
+/** Shows the file dialog and loads the chosen Markdown file into the editor. */
 static int on_open(Ihandle *item)
 {
     (void)item;          // unused parameter
@@ -25,7 +28,14 @@ static int on_open(Ihandle *item)
     if (IupGetInt(file_dialog, "STATUS") != -1)
     {
         char *path = IupGetAttribute(file_dialog, "VALUE");
-        IupMessage("Selected file", path);
+        char *content = file_read(path);
+
+        if (content == NULL) IupMessage("Error", "Could not read the file");
+        else
+        {
+            IupSetStrAttribute(editor, "VALUE", content);
+            free(content);
+        }
     }
 
     // path belongs to the dialog: destroy it only after use
@@ -36,15 +46,15 @@ static int on_open(Ihandle *item)
 
 Ihandle *ui_create_main_window(void)
 {
-    Ihandle *text = IupText();
+    editor = IupText();
     // MULTILINE must be set before the window is shown
-    IupSetAttribute(text, "MULTILINE", "YES");
-    IupSetAttribute(text, "EXPAND", "YES");
-    IupSetAttribute(text, "BGCOLOR", THEME_BG);
-    IupSetAttribute(text, "FGCOLOR", THEME_FG);
+    IupSetAttribute(editor, "MULTILINE", "YES");
+    IupSetAttribute(editor, "EXPAND", "YES");
+    IupSetAttribute(editor, "BGCOLOR", THEME_BG);
+    IupSetAttribute(editor, "FGCOLOR", THEME_FG);
 
     // A dialog holds a single child
-    Ihandle *window = IupDialog(text);
+    Ihandle *window = IupDialog(editor);
     IupSetAttribute(window, "TITLE", "Hash");
     IupSetAttribute(window, "SIZE", "HALFxHALF");
 
