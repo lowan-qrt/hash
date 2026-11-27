@@ -1,11 +1,13 @@
 // Builds the main window and its widgets.
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "file.h"
 #include "theme.h"
 #include "ui.h"
 
 static Ihandle *editor;
+static char current_path[4096];
 
 // Menu callbacks: IUP calls them when the item is clicked
 static int on_quit(Ihandle *item)
@@ -33,6 +35,7 @@ static int on_open(Ihandle *item)
         if (content == NULL) IupMessage("Error", "Could not read the file");
         else
         {
+            snprintf(current_path, sizeof(current_path), "%s", path);
             IupSetStrAttribute(editor, "VALUE", content);
             free(content);
         }
@@ -62,10 +65,29 @@ static int on_save_as(Ihandle *item)
         if (file_write(path, content) == -1)
         {
             IupMessage("Error", "Could not save the file");
-        }
+        } else snprintf(current_path, sizeof(current_path), "%s", path);
     }
 
     IupDestroy(file_dialog);
+
+    return IUP_DEFAULT;
+}
+
+/** Saves into the current file, or asks for a path if there is none. */
+static int on_save(Ihandle *item)
+{
+    // No current file yet: behave like "Save as..."
+    if (current_path[0] == '\0')
+    {
+        return on_save_as(item);
+    }
+
+    char *content = IupGetAttribute(editor, "VALUE");
+
+    if (file_write(current_path, content) == -1)
+    {
+        IupMessage("Error", "Could not save the file");
+    }
 
     return IUP_DEFAULT;
 }
@@ -87,13 +109,15 @@ Ihandle *ui_create_main_window(void)
     // File menu: built from the inside out (items, list, submenu, bar)
     Ihandle *separator = IupMenuSeparator();
     Ihandle *item_open = IupMenuItem("Open");
+    Ihandle *item_save = IupMenuItem("Save");
     Ihandle *item_save_as = IupMenuItem("Save as...");
     Ihandle *item_quit = IupMenuItem("Quit");
-    Ihandle *file_list = IupMenu(item_open, item_save_as, separator, item_quit, NULL);
+    Ihandle *file_list = IupMenu(item_open, item_save, item_save_as, separator, item_quit, NULL);
     Ihandle *file_menu = IupSubmenu("File", file_list);
     Ihandle *menu_bar  = IupMenu(file_menu, NULL);
     IupSetAttributeHandle(window, "MENU", menu_bar);
     IupSetCallback(item_open, "ACTION", on_open);
+    IupSetCallback(item_save, "ACTION", on_save);
     IupSetCallback(item_save_as, "ACTION", on_save_as);
     IupSetCallback(item_quit, "ACTION", on_quit);
 
